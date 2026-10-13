@@ -1,7 +1,34 @@
 // SurfaceActionButtons - Action buttons for surface transformations
-// Displays buttons at the bottom of properties panel based on surface type
+// Displays compact buttons in the properties panel's Actions section based on surface type
 
 const { createElement: h } = React;
+
+const FONT = 'system-ui, -apple-system, Segoe UI, sans-serif';
+
+/**
+ * Compact 24px button that grows to fill its row in a wrapping flex container.
+ * Primary buttons use the accent color, the others the panel background.
+ */
+export const ActionButton = ({ onClick, title, primary, disabled, children, c }) =>
+    h('button', {
+        onClick,
+        title,
+        disabled,
+        style: {
+            flex: '1 1 auto',
+            height: 24,
+            padding: '0 8px',
+            backgroundColor: disabled ? c.textDim : primary ? c.accent : c.bg,
+            color: primary || disabled ? 'white' : c.text,
+            border: `1px solid ${disabled ? c.textDim : primary ? c.accent : c.border}`,
+            borderRadius: 3,
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            fontSize: 12,
+            fontFamily: FONT,
+            whiteSpace: 'nowrap',
+            opacity: disabled ? 0.8 : 1
+        }
+    }, children);
 
 /**
  * Surface Action Buttons Component
@@ -14,117 +41,28 @@ const { createElement: h } = React;
  * @param {Object} props.c - Color scheme object
  */
 export const SurfaceActionButtons = ({ surface, onInvert, onNormalizeUnZ, onConvertToUnZ, onConvertToPoly, onFlipX, onFlipY, onFlipZ, onRotate90CCW, onRotate90CW, onCopyCoefficients, c, t }) => {
-    const buttonStyle = {
-        padding: '8px 16px',
-        backgroundColor: c.accent,
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        fontWeight: '600',
-        marginRight: '8px',
-        marginBottom: '8px'
-    };
+    const isZernike = surface.type === 'Zernike';
+    const button = (onClick, label, title) => h(ActionButton, { onClick, title, c }, label);
 
-    const buttonHoverStyle = {
-        ...buttonStyle,
-        backgroundColor: '#3a7bc8'
-    };
-
-    return h('div', {
-        style: {
-            marginTop: '20px',
-            paddingTop: '15px',
-            borderTop: `1px solid ${c.border}`,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px'
-        }
-    },
+    return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
         // Invert button - shown for all surfaces
-        h('button', {
-            onClick: onInvert,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.invert
-        }, t.properties.invert),
+        button(onInvert, t.properties.invert, t.properties.tooltips.invert),
 
         // Normalize to H button - shown only for Opal Un Z
-        surface.type === 'Opal Un Z' && h('button', {
-            onClick: onNormalizeUnZ,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.normalize
-        }, t.properties.normalize),
+        surface.type === 'Opal Un Z' && button(onNormalizeUnZ, t.properties.normalize, t.properties.tooltips.normalize),
 
         // Convert to UnZ button - shown only for Poly
-        surface.type === 'Poly' && h('button', {
-            onClick: onConvertToUnZ,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.convertToUnZ
-        }, t.properties.convertToUnZ),
+        surface.type === 'Poly' && button(onConvertToUnZ, t.properties.convertToUnZ, t.properties.tooltips.convertToUnZ),
 
-        // Flip and Copy buttons - shown only for Zernike
-        surface.type === 'Zernike' && h('button', {
-            onClick: onFlipX,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.flipX
-        }, t.properties.flipX),
+        // Flip, rotate and copy buttons - shown only for Zernike
+        isZernike && button(onFlipX, t.properties.flipX, t.properties.tooltips.flipX),
+        isZernike && button(onFlipY, t.properties.flipY, t.properties.tooltips.flipY),
+        isZernike && button(onFlipZ, t.properties.flipZ, t.properties.tooltips.flipZ),
+        isZernike && button(onRotate90CCW, t.properties.rotate90CCW, t.properties.tooltips.rotate90CCW),
+        isZernike && button(onRotate90CW, t.properties.rotate90CW, t.properties.tooltips.rotate90CW),
+        isZernike && button(onCopyCoefficients, t.properties.copyCoefficients, t.properties.tooltips.copyCoefficients),
 
-        surface.type === 'Zernike' && h('button', {
-            onClick: onFlipY,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.flipY
-        }, t.properties.flipY),
-
-        surface.type === 'Zernike' && h('button', {
-            onClick: onFlipZ,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.flipZ
-        }, t.properties.flipZ),
-
-        surface.type === 'Zernike' && h('button', {
-            onClick: onRotate90CCW,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.rotate90CCW
-        }, t.properties.rotate90CCW),
-
-        surface.type === 'Zernike' && h('button', {
-            onClick: onRotate90CW,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.rotate90CW
-        }, t.properties.rotate90CW),
-
-        surface.type === 'Zernike' && h('button', {
-            onClick: onCopyCoefficients,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.copyCoefficients
-        }, t.properties.copyCoefficients),
-
-                // Convert to Poly button - shown only for Opal Un Z
-        surface.type === 'Opal Un Z' && h('button', {
-            onClick: onConvertToPoly,
-            style: buttonStyle,
-            onMouseEnter: (e) => e.target.style.backgroundColor = '#3a7bc8',
-            onMouseLeave: (e) => e.target.style.backgroundColor = c.accent,
-            title: t.properties.tooltips.convertToPoly
-        }, t.properties.convertToPoly)
+        // Convert to Poly button - shown only for Opal Un Z
+        surface.type === 'Opal Un Z' && button(onConvertToPoly, t.properties.convertToPoly, t.properties.tooltips.convertToPoly)
     );
 };

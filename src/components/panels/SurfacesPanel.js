@@ -5,6 +5,8 @@
 // Compact, VS Code-style explorer: 22px single-line rows, actions as icon
 // buttons in the header instead of a button bar at the bottom.
 
+import { Chevron } from '../Icons.js';
+
 const { createElement: h, useState } = React;
 
 // Width of the chevron column; surface rows indent past it and the folder icon
@@ -14,13 +16,6 @@ const SURFACE_INDENT = 32;
 const FONT = 'system-ui, -apple-system, Segoe UI, sans-serif';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-
-const Chevron = ({ open }) =>
-    h('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', style: { flexShrink: 0 } },
-        h('path', {
-            d: open ? 'M4 6l4 4 4-4' : 'M6 4l4 4-4 4',
-            stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round'
-        }));
 
 const FolderIcon = ({ open }) =>
     h('svg', { width: 16, height: 16, viewBox: '0 0 16 16', fill: 'none', style: { flexShrink: 0 } },

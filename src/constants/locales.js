@@ -73,8 +73,6 @@ export const locales = {
       type: 'Type',
       color: 'Color',
       parameters: 'Parameters',
-      universalParameters: 'Universal Parameters',
-      surfaceSpecificParameters: 'Surface-Specific Parameters',
       calculatedMetrics: 'Calculated Metrics',
 
       // Actions
@@ -92,6 +90,20 @@ export const locales = {
       rotate90CW: 'Rotate 90° CW',
       copyCoefficients: 'Copy Coefficients',
       zernikeCoefficients: 'Zernike Coefficients',
+      zernikeAllTerms: 'All terms',
+      zernikeGroupEnable: 'Enable {terms}',
+      zernikeGroupDisable: 'Disable {terms}',
+      zernikeGroups: {
+        piston: 'Piston',
+        tilt: 'Tilt',
+        defocus: 'Defocus',
+        astigmatism: 'Astigmatism',
+        coma: 'Coma',
+        spherical: 'Spherical',
+        trefoil: 'Trefoil',
+        tetrafoil: 'Tetrafoil',
+        pentafoil: 'Pentafoil'
+      },
 
       // Hover text for the action buttons above
       tooltips: {
@@ -558,8 +570,6 @@ export const locales = {
       type: 'Тип',
       color: 'Цвет',
       parameters: 'Параметры',
-      universalParameters: 'Универсальные параметры',
-      surfaceSpecificParameters: 'Специфические параметры',
       calculatedMetrics: 'Вычисленные метрики',
 
       // Действия
@@ -577,6 +587,20 @@ export const locales = {
       rotate90CW: 'Повернуть 90° ЧС',
       copyCoefficients: 'Копировать коэффициенты',
       zernikeCoefficients: 'Коэффициенты Цернике',
+      zernikeAllTerms: 'Все члены',
+      zernikeGroupEnable: 'Включить {terms}',
+      zernikeGroupDisable: 'Отключить {terms}',
+      zernikeGroups: {
+        piston: 'Поршень',
+        tilt: 'Наклон',
+        defocus: 'Дефокус',
+        astigmatism: 'Астигматизм',
+        coma: 'Кома',
+        spherical: 'Сферическая',
+        trefoil: 'Трилистник',
+        tetrafoil: 'Четырёхлистник',
+        pentafoil: 'Пятилистник'
+      },
 
       // Всплывающие подсказки для кнопок действий выше
       tooltips: {

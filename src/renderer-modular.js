@@ -552,12 +552,15 @@ const OpticalSurfaceAnalyzer = () => {
         setSelectedSurface(updatedSurface);
     };
 
-    const updateParameter = (param, value) => {
+    const updateParameter = (param, value) => updateParameters({ [param]: value });
+
+    // Set several parameters in one update (e.g. enabling a group of Zernike terms)
+    const updateParameters = (changes) => {
         if (!selectedSurface || !selectedFolder) return;
 
         const updatedSurface = {
             ...selectedSurface,
-            parameters: { ...selectedSurface.parameters, [param]: value }
+            parameters: { ...selectedSurface.parameters, ...changes }
         };
 
         // Update state immediately for instant UI response
@@ -585,31 +588,16 @@ const OpticalSurfaceAnalyzer = () => {
         setTimeout(() => {
             if (!propertiesPanelRef.current) return;
 
-            // Find all input elements in the properties panel
-            const inputs = Array.from(propertiesPanelRef.current.querySelectorAll('input[type="text"]'));
+            // Parameter inputs carry their parameter name in data-param
+            const inputs = Array.from(propertiesPanelRef.current.querySelectorAll('input[data-param]'));
+            const currentIndex = inputs.findIndex(input => input.dataset.param === currentParam);
+            if (currentIndex < 0) return;
 
-            // Find the input for the current parameter by matching label text
-            // Note: labels may include additional text (e.g., "Z1 - Piston"), so we check if label starts with param
-            let currentIndex = -1;
-            for (let i = 0; i < inputs.length; i++) {
-                const input = inputs[i];
-                const container = input.parentElement;
-                const label = container?.querySelector('label');
-                const labelText = label?.textContent?.trim();
-                // Check if label matches exactly or starts with param followed by space or separator
-                // This handles both "Radius" and "Z1 - Piston" formats
-                if (labelText === currentParam ||
-                    labelText?.startsWith(currentParam + ' ') ||
-                    labelText?.startsWith(currentParam + '\u00A0')) { // Also check for non-breaking space
-                    currentIndex = i;
-                    break;
-                }
-            }
-
-            // Focus the next input if available
-            if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
-                inputs[currentIndex + 1].focus();
-                inputs[currentIndex + 1].select(); // Select all text in the next input
+            // Focus the next input, skipping disabled Zernike terms
+            const next = inputs.slice(currentIndex + 1).find(input => !input.disabled);
+            if (next) {
+                next.focus();
+                next.select(); // Select all text in the next input
             }
         }, 0);
     };
@@ -1138,6 +1126,7 @@ const OpticalSurfaceAnalyzer = () => {
                 updateSurfaceName,
                 updateSurfaceType,
                 updateParameter,
+                updateParameters,
                 onConvert: () => setShowConvert(true),
                 onFastConvertToPoly: handleFastConvertToPoly,
                 fastConvertProgress,

@@ -13,3 +13,13 @@ export const MinusIcon = () => (
         h('line', { x1: "5", y1: "12", x2: "19", y2: "12" })
     )
 );
+
+// Disclosure chevron for tree rows and collapsible sections
+export const Chevron = ({ open }) => (
+    h('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', style: { flexShrink: 0 } },
+        h('path', {
+            d: open ? 'M4 6l4 4 4-4' : 'M6 4l4 4-4 4',
+            stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round'
+        })
+    )
+);

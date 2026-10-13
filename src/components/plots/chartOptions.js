@@ -175,7 +175,9 @@ export const surface3DOption = ({ grid, unit, colorscale, colors, gridColor, zAs
             boxHeight: 100 * zAspect,
             right: 90,
             axisPointer: { show: false },
-            viewControl: { alpha: 30, beta: 40, distance: 220, animation: false },
+            // Left-drag rotates at twice the ECharts GL default speed
+            // (a drag across the plot's height turns it about 180 degrees).
+            viewControl: { alpha: 30, beta: 40, distance: 220, animation: false, rotateSensitivity: 2 },
             light: { main: { intensity: 1.0, alpha: 40, beta: 30 }, ambient: { intensity: 0.5 } },
             postEffect: { enable: false },
             temporalSuperSampling: { enable: false }

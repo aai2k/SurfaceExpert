@@ -80,6 +80,20 @@ export const zernikeNames = {
     'Z37': 'Quinary Spherical'
 };
 
+// Zernike terms grouped by aberration type, for enabling/disabling a whole
+// group at once (labels in locales: properties.zernikeGroups)
+export const zernikeGroups = [
+    { key: 'piston', terms: ['Z1'] },
+    { key: 'tilt', terms: ['Z2', 'Z3'] },
+    { key: 'defocus', terms: ['Z4'] },
+    { key: 'astigmatism', terms: ['Z5', 'Z6', 'Z12', 'Z13', 'Z21', 'Z22', 'Z32', 'Z33'] },
+    { key: 'coma', terms: ['Z7', 'Z8', 'Z14', 'Z15', 'Z23', 'Z24', 'Z34', 'Z35'] },
+    { key: 'spherical', terms: ['Z9', 'Z16', 'Z25', 'Z36', 'Z37'] },
+    { key: 'trefoil', terms: ['Z10', 'Z11', 'Z19', 'Z20', 'Z30', 'Z31'] },
+    { key: 'tetrafoil', terms: ['Z17', 'Z18', 'Z28', 'Z29'] },
+    { key: 'pentafoil', terms: ['Z26', 'Z27'] }
+];
+
 // Color scheme for dark theme
 export const colors = {
     bg: '#2b2b2b',        // Main background

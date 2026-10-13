@@ -3,6 +3,8 @@
  * Provides functions for normalizing, converting, and inverting optical surfaces
  */
 
+import { parseNumber } from './numberParsing.js';
+
 /**
  * Normalize Opal Un Z surface coefficients to a new H value
  * Scales all polynomial coefficients (A3 through A13) based on the ratio between
@@ -32,7 +34,7 @@ export const normalizeUnZ = (normalizationValue, currentH, coefficients) => {
     const normalizedCoeffs = {};
     for (let n = 3; n <= 13; n++) {
         const key = `A${n}`;
-        const currentValue = parseFloat(coefficients[key]) || 0;
+        const currentValue = parseNumber(coefficients[key]);
         const factor = Math.pow(ratio, n);
         normalizedCoeffs[key] = (currentValue * factor).toString();
     }
@@ -55,19 +57,19 @@ export const normalizeUnZ = (normalizationValue, currentH, coefficients) => {
  */
 export const convertPolyToUnZ = (polyParams) => {
     // Step 1: Parse input
-    const polyA1 = parseFloat(polyParams.A1) || 0;
+    const polyA1 = parseNumber(polyParams.A1);
     const R = polyA1 / 2.0;
     const H = 1.0;
 
     // Step 2: Convert coefficients A3-A13
     const unzCoeffs = {};
     for (let n = 3; n <= 13; n++) {
-        const polyA_n = parseFloat(polyParams[`A${n}`]) || 0;
+        const polyA_n = parseNumber(polyParams[`A${n}`]);
         unzCoeffs[`A${n}`] = (-(Math.pow(H, n) / (2 * R)) * polyA_n).toString();
     }
 
     // Step 3: Convert A2
-    const polyA2 = parseFloat(polyParams.A2) || 0;
+    const polyA2 = parseNumber(polyParams.A2);
     const unZ_e2 = polyA2 + 1;
 
     // Return converted parameters
@@ -89,8 +91,8 @@ export const convertPolyToUnZ = (polyParams) => {
  */
 export const convertUnZToPoly = (unzParams) => {
     // Step 1: Parse input
-    const R = parseFloat(unzParams.Radius) || 0;
-    const H = parseFloat(unzParams.H) || 1;
+    const R = parseNumber(unzParams.Radius);
+    const H = parseNumber(unzParams.H) || 1;
 
     if (H <= 0) {
         throw new Error("H must be positive");
@@ -99,12 +101,12 @@ export const convertUnZToPoly = (unzParams) => {
     // Step 2: Convert coefficients A3-A13
     const polyCoeffs = {};
     for (let n = 3; n <= 13; n++) {
-        const unzA_n = parseFloat(unzParams[`A${n}`]) || 0;
+        const unzA_n = parseNumber(unzParams[`A${n}`]);
         polyCoeffs[`A${n}`] = (-(2 * R / Math.pow(H, n)) * unzA_n).toString();
     }
 
     // Step 3: Convert e2 to A2
-    const unZ_e2 = parseFloat(unzParams.e2) || 0;
+    const unZ_e2 = parseNumber(unzParams.e2);
     const polyA2 = unZ_e2 - 1;
 
     // Return converted parameters
@@ -121,8 +123,8 @@ export const convertUnZToPoly = (unzParams) => {
  * @returns {string} Negated value as string
  */
 const changeSign = (value) => {
-    const numValue = parseFloat(value);
-    if (isNaN(numValue) || numValue === 0) {
+    const numValue = parseNumber(value);
+    if (numValue === 0) {
         return value; // Return original if not a number or if zero
     }
     return (-numValue).toString();
