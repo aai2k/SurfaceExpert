@@ -126,6 +126,7 @@ export const locales = {
       title: 'Surfaces',
       newFolder: 'New Folder',
       newSurface: 'New Surface',
+      collapseAll: 'Collapse All',
 
       // Context menu
       addSurface: 'Add Surface',
@@ -604,6 +605,7 @@ export const locales = {
       title: 'Поверхности',
       newFolder: 'Новая папка',
       newSurface: 'Новая поверхность',
+      collapseAll: 'Свернуть все',
 
       // Контекстное меню
       addSurface: 'Добавить поверхность',

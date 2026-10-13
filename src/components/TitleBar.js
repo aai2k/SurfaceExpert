@@ -5,6 +5,8 @@
 
 export function TitleBar({ c, onWindowControl }) {
   const [isMaximized, setIsMaximized] = React.useState(false);
+  // The browser build has no native window to minimize, maximize or close.
+  const isWeb = !!(window.electronAPI && window.electronAPI.isWeb);
 
   React.useEffect(() => {
     // Listen for maximize/unmaximize events from main process
@@ -58,8 +60,8 @@ export function TitleBar({ c, onWindowControl }) {
       }
     }, 'SurfaceExpert'),
 
-    // Right side - Window controls
-    React.createElement('div', {
+    // Right side - Window controls (a spacer in the browser keeps the title centered)
+    isWeb ? React.createElement('div', { style: { width: '48px' } }) : React.createElement('div', {
       style: {
         display: 'flex',
         height: '100%',

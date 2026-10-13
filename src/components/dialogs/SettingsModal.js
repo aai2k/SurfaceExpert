@@ -358,8 +358,8 @@ export const SettingsModal = ({ colorscale, setColorscale, wavelength, setWavele
                         }, t.settings.zernikeUnitHelp || 'Display Zernike sag values in mm or in waves using the reference wavelength above')
                     ),
 
-                    // Fitter Engine
-                    h('div', { style: { marginBottom: '0', marginTop: '20px' } },
+                    // Fitter Engine (the browser build has no Python, so the choice is desktop-only)
+                    !(window.electronAPI && window.electronAPI.isWeb) && h('div', { style: { marginBottom: '0', marginTop: '20px' } },
                         h('label', {
                             style: {
                                 display: 'block',

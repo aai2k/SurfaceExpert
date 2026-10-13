@@ -53,6 +53,14 @@ Desktop application for analyzing and visualizing optical surface characteristic
   - Complete parameter documentation
   - Summary metrics and data tables
 
+## Web Version
+
+SurfaceExpert also runs in the browser: https://aai2k.github.io/SurfaceExpert/
+
+Surfaces and settings are stored in the browser's local storage, so they stay on that machine and that browser. ZMX import reads a local file, reports download, and PDF export goes through the browser's print dialog. The legacy Python fitter is desktop-only.
+
+Build it locally with `npm run build:web`; the static site lands in `web/dist/`. Pushes to `main` deploy it through `.github/workflows/pages.yml`.
+
 ## Installation
 
 ### Prerequisites

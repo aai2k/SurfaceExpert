@@ -18,7 +18,7 @@ export function MenuBar({ c, onMenuAction, t }) {
     ],
     [t.menu.view]: [
       { label: t.menu.reload, action: 'reload', shortcut: 'Ctrl+R' },
-      { label: t.menu.toggleDevTools, action: 'toggle-devtools', shortcut: 'Ctrl+Shift+I' },
+      { label: t.menu.toggleDevTools, action: 'toggle-devtools', shortcut: 'Ctrl+Shift+I', desktopOnly: true },
       { type: 'separator' },
       { label: t.menu.toggleFullscreen, action: 'toggleFullscreen', shortcut: 'F11' }
     ],
@@ -27,11 +27,18 @@ export function MenuBar({ c, onMenuAction, t }) {
     ],
     [t.menu.help]: [
       { label: t.menu.documentation, action: 'documentation' },
-      { label: t.menu.checkForUpdates || 'Check for Updates', action: 'check-for-updates' },
+      { label: t.menu.checkForUpdates || 'Check for Updates', action: 'check-for-updates', desktopOnly: true },
       { type: 'separator' },
       { label: t.menu.about, action: 'about' }
     ]
   };
+
+  // DevTools and the update check have nothing to act on in the browser build.
+  if (window.electronAPI && window.electronAPI.isWeb) {
+    for (const name of Object.keys(menus)) {
+      menus[name] = menus[name].filter(item => !item.desktopOnly);
+    }
+  }
 
   const handleMenuClick = (menuName, event) => {
     if (openMenu === menuName) {

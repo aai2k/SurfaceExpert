@@ -197,9 +197,11 @@ const OpticalSurfaceAnalyzer = () => {
         if (window.electronAPI && window.electronAPI.loadFolders) {
             const result = await window.electronAPI.loadFolders();
             if (result.success) {
-                // Ensure all surfaces have Step parameter for backward compatibility
+                // Ensure all surfaces have Step parameter for backward compatibility.
+                // Folders always start collapsed.
                 const foldersWithStep = result.folders.map(folder => ({
                     ...folder,
+                    expanded: false,
                     surfaces: folder.surfaces.map(surface => ({
                         ...surface,
                         parameters: {
@@ -220,7 +222,7 @@ const OpticalSurfaceAnalyzer = () => {
             const defaultFolder = {
                 id: 'default',
                 name: 'My Surfaces',
-                expanded: true,
+                expanded: false,
                 surfaces: sampleSurfaces.map(surface => ({
                     ...surface,
                     parameters: {
@@ -631,18 +633,20 @@ const OpticalSurfaceAnalyzer = () => {
             }
         };
 
-        // Save to disk
-        if (window.electronAPI) {
-            await window.electronAPI.saveSurface(selectedFolder.name, newSurface);
-        }
-
+        // Update state before saving: after an await the two updates are no
+        // longer batched, and the folders effect would re-select the old surface.
         const updated = folders.map(f =>
             f.id === selectedFolder.id
-                ? { ...f, surfaces: [...f.surfaces, newSurface] }
+                ? { ...f, expanded: true, surfaces: [...f.surfaces, newSurface] }
                 : f
         );
         setFolders(updated);
         setSelectedSurface(newSurface);
+
+        // Save to disk
+        if (window.electronAPI) {
+            await window.electronAPI.saveSurface(selectedFolder.name, newSurface);
+        }
     };
 
     const removeSurface = async () => {
@@ -866,6 +870,10 @@ const OpticalSurfaceAnalyzer = () => {
             f.id === folderId ? { ...f, expanded: !f.expanded } : f
         );
         setFolders(updated);
+    };
+
+    const collapseAllFolders = () => {
+        setFolders(folders.map(f => (f.expanded ? { ...f, expanded: false } : f)));
     };
 
     // ============================================
@@ -1101,6 +1109,7 @@ const OpticalSurfaceAnalyzer = () => {
                 handleSurfaceClick,
                 setSelectedFolder,
                 toggleFolderExpanded,
+                collapseAllFolders,
                 addSurface,
                 removeSelectedSurfaces,
                 setContextMenu,
