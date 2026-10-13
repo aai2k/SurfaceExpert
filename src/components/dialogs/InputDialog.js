@@ -41,7 +41,12 @@ export const InputDialog = ({ inputDialog, c, t }) => {
             justifyContent: 'center',
             zIndex: 10001
         },
-        onClick: () => inputDialog.onCancel()
+        // No click-to-dismiss on the backdrop: a stray click outside would
+        // throw away what was typed. The X, Cancel and Escape close it.
+        // Such a click also leaves the focus in the field, so Enter still works.
+        onMouseDown: (e) => {
+            if (e.target === e.currentTarget) e.preventDefault();
+        }
     },
         h('div', {
             style: {
@@ -54,14 +59,45 @@ export const InputDialog = ({ inputDialog, c, t }) => {
             },
             onClick: (e) => e.stopPropagation()
         },
-            h('h3', {
+            h('div', {
                 style: {
-                    margin: '0 0 16px 0',
-                    color: c.text,
-                    fontSize: '16px',
-                    fontWeight: '500'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    margin: '0 0 16px 0'
                 }
-            }, inputDialog.title),
+            },
+                h('h3', {
+                    style: {
+                        margin: 0,
+                        color: c.text,
+                        fontSize: '16px',
+                        fontWeight: '500'
+                    }
+                }, inputDialog.title),
+                h('button', {
+                    onClick: () => inputDialog.onCancel(),
+                    title: t.buttons.close,
+                    'aria-label': t.buttons.close,
+                    style: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
+                        padding: 0,
+                        backgroundColor: 'transparent',
+                        color: c.textDim,
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                    }
+                },
+                    h('svg', { width: 12, height: 12, viewBox: '0 0 12 12', fill: 'none' },
+                        h('path', { d: 'M1 1l10 10M11 1L1 11', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round' })))
+            ),
             h('input', {
                 type: 'text',
                 value: value,
