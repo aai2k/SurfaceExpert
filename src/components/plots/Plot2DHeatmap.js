@@ -1,170 +1,40 @@
-// Plot2DHeatmap - Creates 2D heatmap using Plotly's native heatmap type
-// Generates a grid with proper heatmap visualization
+// Plot2DHeatmap - Creates 2D heatmap using ECharts
 
-import { calculateSurfaceValues } from '../../utils/calculations.js';
-import { sanitizeValue, sanitizeArray2D, safePlotlyNewPlot } from '../../utils/dataSanitization.js';
 import { getGridColor } from '../../constants/colorPalettes.js';
-import { parseNumber } from '../../utils/numberParsing.js';
-import { resolveColorscale } from '../../constants/colorscales.js';
+import { renderChart } from '../../utils/charts.js';
+import { sampleSurfaceGrid, heatmapOption, heatmapLayout } from './chartOptions.js';
 
 /**
  * Create 2D heatmap
  * @param {Object} plotRef - React ref to plot container
  * @param {Object} selectedSurface - Surface object with type and parameters
  * @param {string} activeTab - Current metric tab (sag, slope, asphericity, aberration)
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {Object} c - Color scheme object
  * @param {number} gridSize - Grid size (odd number to ensure point at 0)
  * @param {Object} t - Locale translations object
  */
 export const create2DHeatmap = (plotRef, selectedSurface, activeTab, colorscale, c, gridSize = 101, t = null, zernikeUnit = 'mm', wavelength = 632.8) => {
-    // Default translations if not provided
-    const translations = t || {
-        summary: {
-            units: {
-                mm: 'mm',
-                rad: 'rad'
-            }
-        }
-    };
-    const minHeight = parseNumber(selectedSurface.parameters['Min Height']);
-    const maxHeight = parseNumber(selectedSurface.parameters['Max Height']);
-    const size = gridSize;
+    const units = t?.summary?.units || { mm: 'mm', rad: 'rad' };
 
     const isZernike = selectedSurface.type === 'Zernike';
     const useWaves = isZernike && zernikeUnit === 'waves';
-    const wavelengthMm = wavelength * 1e-6; // nm -> mm
-    const unitScale = useWaves ? (1 / wavelengthMm) : 1;
-    const unit = activeTab === 'slope'
-        ? translations.summary.units.rad
-        : (useWaves ? (translations.summary.units.waves || 'waves') : translations.summary.units.mm);
-
-    // Generate coordinate arrays
-    const x = [];
-    const y = [];
-    for (let i = 0; i < size; i++) {
-        const coord = -maxHeight + (i * (2 * maxHeight)) / (size - 1);
-        x.push(coord);
-        y.push(coord);
-    }
-
-    // Generate Z grid data
-    const z = [];
-    for (let j = 0; j < size; j++) {
-        const yj = y[j];
-        const row = [];
-        for (let i = 0; i < size; i++) {
-            const xi = x[i];
-            const r = Math.sqrt(xi * xi + yj * yj);
-
-            if (r >= minHeight && r <= maxHeight) {
-                // For non-rotationally symmetric surfaces (Zernike, Irregular), pass x,y coordinates; for others use r
-                const values = (selectedSurface.type === 'Irregular' || selectedSurface.type === 'Zernike')
-                    ? calculateSurfaceValues(r, selectedSurface, xi, yj)
-                    : calculateSurfaceValues(r, selectedSurface);
-
-                let val = 0;
-                if (activeTab === 'sag') val = values.sag;
-                else if (activeTab === 'slope') val = values.slope;
-                else if (activeTab === 'asphericity') val = values.asphericity;
-                else if (activeTab === 'aberration') val = values.aberration;
-
-                // Sanitize value to prevent WebGL errors
-                val = sanitizeValue(val) * unitScale;
-                row.push(val);
-            } else {
-                row.push(null);
-            }
-        }
-        z.push(row);
-    }
-
-    // Sanitize the entire z array (additional safety check)
-    const zSanitized = sanitizeArray2D(z);
+    const unitScale = useWaves ? 1 / (wavelength * 1e-6) : 1; // wavelength nm -> mm
+    const unit = activeTab === 'slope' ? units.rad : (useWaves ? (units.waves || 'waves') : units.mm);
 
     const metricLabel = t?.visualization?.tabs?.[activeTab]
         || activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
 
-    // Tick precision follows the magnitude of the range being shown, so that a
-    // wavefront in waves does not print seven meaningless decimals while a sag
-    // of a few microns still resolves.
-    let zLo = Infinity, zHi = -Infinity;
-    for (const row of zSanitized) {
-        for (const v of row) {
-            if (v === null) continue;
-            if (v < zLo) zLo = v;
-            if (v > zHi) zHi = v;
-        }
-    }
-    const zSpan = (zHi > zLo) ? (zHi - zLo) : 0;
-    const barTickFormat = zSpan >= 100 ? '.0f'
-        : zSpan >= 1 ? '.2f'
-        : zSpan >= 0.01 ? '.4f'
-        : '.7f';
+    const grid = sampleSurfaceGrid(selectedSurface, activeTab, gridSize, unitScale);
 
-    const data = [{
-        x: x,
-        y: y,
-        z: zSanitized,
-        type: 'heatmap',
-        colorscale: resolveColorscale(colorscale),
-        // Kept short and anchored below centre so the bar clears the modebar,
-        // which Plotly pins to the top-right corner of the plot area.
-        colorbar: {
-            // Plotly 3 requires the object form; a bare string is ignored.
-            title: { text: unit, font: { size: 11 } },
-            thickness: 12,
-            len: 0.62,
-            y: 0.44,
-            yanchor: 'middle',
-            tickfont: { size: 10 },
-            bgcolor: 'rgba(0,0,0,0)',
-            borderwidth: 0,
-            outlinewidth: 0,
-            exponentformat: 'none',
-            tickformat: barTickFormat
-        },
-        hoverongaps: false,
-        hovertemplate: `X: %{x:.4f} ${translations.summary.units.mm}<br>Y: %{y:.4f} ${translations.summary.units.mm}<br>` +
-                       activeTab + `: %{z:.7f} ${unit}<extra></extra>`
-    }];
-
-    const gridColor = getGridColor(c);
-
-    const layout = {
-        title: { text: `${metricLabel} ${t?.visualization?.heatmap || 'Heatmap'}` },
-        xaxis: {
-            title: { text: t?.visualization?.xMm || 'X (mm)' },
-            scaleanchor: 'y',
-            scaleratio: 1,
-            constrain: 'domain',
-            gridcolor: gridColor,
-            zerolinecolor: gridColor,
-            exponentformat: 'none',
-            tickformat: '.4f'
-        },
-        yaxis: {
-            title: { text: t?.visualization?.yMm || 'Y (mm)' },
-            constrain: 'domain',
-            gridcolor: gridColor,
-            zerolinecolor: gridColor,
-            exponentformat: 'none',
-            tickformat: '.4f'
-        },
-        paper_bgcolor: c.panel,
-        plot_bgcolor: c.bg,
-        font: { color: c.text },
-        margin: { l: 60, r: 120, t: 60, b: 60 }
-    };
-
-    const config = {
-        responsive: true,
-        displayModeBar: true,
-        displaylogo: false,
-        scrollZoom: true
-    };
-
-    safePlotlyNewPlot(plotRef.current, data, layout, config).catch(err => {
-        console.error('Failed to render 2D heatmap:', err);
-    });
+    renderChart(plotRef.current, '2d', heatmapOption({
+        grid,
+        unit,
+        colorscale,
+        colors: c,
+        gridColor: getGridColor(c),
+        title: `${metricLabel} ${t?.visualization?.heatmap || 'Heatmap'}`,
+        metricLabel,
+        t
+    }), heatmapLayout);
 };

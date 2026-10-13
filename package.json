@@ -1,6 +1,6 @@
 {
   "name": "surface-expert",
-  "version": "3.0.4",
+  "version": "3.1.0",
   "description": "SurfaceExpert - Optical Surface Analysis Desktop Application",
   "main": "src/main.js",
   "scripts": {
@@ -29,6 +29,8 @@
     "rcedit": "^5.0.2"
   },
   "dependencies": {
+    "echarts": "^6.1.0",
+    "echarts-gl": "^2.1.0",
     "ml-levenberg-marquardt": "^5.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

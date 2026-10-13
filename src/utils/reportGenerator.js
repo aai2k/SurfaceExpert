@@ -5,8 +5,11 @@
 
 import { formatValue, degreesToDMS } from './formatters.js';
 import { getLocale } from '../constants/locales.js';
-import { parseNumber } from './numberParsing.js';
-import { resolveColorscale } from '../constants/colorscales.js';
+import { chartToImage } from './charts.js';
+import {
+    sampleSurfaceGrid, surface3DOption, surfaceZAspect,
+    heatmapOption, heatmapLayout, crossSectionOption, crossSectionLayout
+} from '../components/plots/chartOptions.js';
 
 /**
  * Get LaTeX equation for surface type
@@ -481,70 +484,46 @@ const generatePlotsSection = (plotImages, showSlope, showAsphericity, showAberra
     return html;
 };
 
-/**
- * Export Plotly plot to base64 image
- */
-export const exportPlotToImage = async (plotId, width = 800, height = 500) => {
-    try {
-        const imgData = await Plotly.toImage(plotId, {
-            format: 'png',
-            width: width,
-            height: height,
-            scale: 2
-        });
-        return imgData;
-    } catch (error) {
-        console.error('Error exporting plot to image:', error);
-        return null;
-    }
+// Light colors for plots embedded in the (white) report.
+const REPORT_COLORS = {
+    bg: '#f9f9f9',
+    panel: '#ffffff',
+    text: '#333333',
+    textDim: '#666666'
 };
+const REPORT_GRID_COLOR = 'rgba(0, 0, 0, 0.1)';
 
 /**
  * Generate individual metric plots
  */
-export const generateMetricPlots = async (plotData, t = null) => {
+export const generateMetricPlots = async (plotData, t = null, surfaceType = null) => {
     const { rValues, sagValues, slopeValues, asphericityValues, aberrationValues } = plotData;
     const locale = t || getLocale();
 
     // Helper to create a simple line plot
-    const createPlot = async (x, y, yaxis, equalAspect = false) => {
-        const plotDiv = document.createElement('div');
-        plotDiv.id = 'temp-plot-' + Date.now() + Math.random();
-        plotDiv.style.position = 'absolute';
-        plotDiv.style.left = '-9999px';
-        plotDiv.style.width = '600px';
-        plotDiv.style.height = '400px';
-        document.body.appendChild(plotDiv);
-
-        const layout = {
-            xaxis: { title: { text: locale.visualization.radialCoordinate }, showgrid: true },
-            yaxis: { title: { text: yaxis }, showgrid: true },
-            margin: { l: 60, r: 30, t: 30, b: 50 },
-            paper_bgcolor: '#fff',
-            plot_bgcolor: '#f9f9f9'
-        };
-
-        // Add 1:1 aspect ratio for sag plot
-        if (equalAspect) {
-            layout.xaxis.scaleanchor = 'y';
-            layout.xaxis.scaleratio = 1;
-        }
-
-        await Plotly.newPlot(plotDiv, [{
-            x: x,
-            y: y,
-            type: 'scatter',
-            mode: 'lines',
-            line: { color: '#2563eb', width: 2 }
-        }], layout, { displayModeBar: false });
-
-        const imgData = await exportPlotToImage(plotDiv.id, 600, 400);
-        document.body.removeChild(plotDiv);
-        return imgData;
+    const createPlot = (x, y, yaxis, equalAspect = false) => {
+        const section = { x, y };
+        const option = crossSectionOption({
+            section,
+            unit: '',
+            metricLabel: yaxis,
+            colors: REPORT_COLORS,
+            gridColor: REPORT_GRID_COLOR,
+            lineColor: '#2563eb',
+            equalAspect,
+            interactive: false,
+            t: locale
+        });
+        // The axis name already carries its unit, e.g. "Sag (mm)".
+        option.yAxis.name = yaxis;
+        option.grid.top = 20;
+        return chartToImage(option, 600, 400, equalAspect ? crossSectionLayout(section, option) : null);
     };
 
+    // As in the cross-section view: sag is drawn 1:1 with the radius, except a
+    // Zernike sag (microns over a mm aperture), which 1:1 flattens to a line.
     return {
-        sagPlot: await createPlot(rValues, sagValues, locale.visualization.sagMm, true),
+        sagPlot: await createPlot(rValues, sagValues, locale.visualization.sagMm, surfaceType !== 'Zernike'),
         slopePlot: await createPlot(rValues, slopeValues, locale.visualization.slopeRad, false),
         asphericityPlot: asphericityValues ? await createPlot(rValues, asphericityValues, locale.visualization.asphericityMm, false) : null,
         aberrationPlot: aberrationValues ? await createPlot(rValues, aberrationValues, locale.visualization.aberrationMm, false) : null
@@ -555,174 +534,50 @@ export const generateMetricPlots = async (plotData, t = null) => {
  * Generate 3D surface plot for report
  * @param {Object} surface - Surface object
  * @param {Object} plotData - Plot data arrays
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {number} gridSize - Grid size for 3D plot (default: 65)
  * @returns {Promise<string>} Base64 encoded image data
  */
-const generate3DPlotImage = async (surface, plotData, colorscale = 'Jet', gridSize = 65, t = null) => {
+const generate3DPlotImage = (surface, plotData, colorscale = 'Jet', gridSize = 65, t = null) => {
     const locale = t || getLocale();
-    const minHeight = parseNumber(surface.parameters['Min Height']);
-    const maxHeight = parseNumber(surface.parameters['Max Height']);
-    const size = gridSize;
-
-    // Import calculateSurfaceValues dynamically
-    const { calculateSurfaceValues } = await import('./calculations.js');
-
-    // Create coordinate arrays
-    const x = [], y = [];
-    for (let i = 0; i < size; i++) {
-        x.push(-maxHeight + (i * (2 * maxHeight)) / (size - 1));
-        y.push(-maxHeight + (i * (2 * maxHeight)) / (size - 1));
-    }
-
-    // Generate 3D grid by calculating actual surface values
-    const z = [];
-    for (let i = 0; i < size; i++) {
-        const row = [];
-        for (let j = 0; j < size; j++) {
-            const xi = x[i];
-            const yj = y[j];
-            const r = Math.sqrt(xi * xi + yj * yj);
-
-            if (r >= minHeight && r <= maxHeight) {
-                // Calculate surface value for this point
-                const values = (surface.type === 'Irregular' || surface.type === 'Zernike')
-                    ? calculateSurfaceValues(r, surface, xi, yj)
-                    : calculateSurfaceValues(r, surface);
-                row.push(values.sag);
-            } else {
-                row.push(null);
-            }
-        }
-        z.push(row);
-    }
-
-    const plotDiv = document.createElement('div');
-    plotDiv.id = 'temp-plot3d-' + Date.now() + Math.random();
-    plotDiv.style.position = 'absolute';
-    plotDiv.style.left = '-9999px';
-    plotDiv.style.width = '800px';
-    plotDiv.style.height = '500px';
-    document.body.appendChild(plotDiv);
-
-    // Calculate z range for aspect ratio
-    const validZ = z.flat().filter(v => v !== null);
-    // Use iterative min/max to avoid stack overflow with large arrays
-    let zMin = Infinity;
-    let zMax = -Infinity;
-    for (let i = 0; i < validZ.length; i++) {
-        if (validZ[i] < zMin) zMin = validZ[i];
-        if (validZ[i] > zMax) zMax = validZ[i];
-    }
-
-    await Plotly.newPlot(plotDiv, [{
-        x: x,
-        y: y,
-        z: z,
-        type: 'surface',
-        colorscale: resolveColorscale(colorscale),
-        showscale: true,
-        contours: {
-            z: {
-                show: true,
-                usecolormap: true,
-                highlightcolor: "#42f462",
-                project: { z: true }
-            }
-        }
-    }], {
-        scene: {
-            camera: { eye: { x: 1.5, y: 1.5, z: 1.5 } },
-            xaxis: { title: { text: locale.visualization.xMm }, range: [-maxHeight, maxHeight] },
-            yaxis: { title: { text: locale.visualization.yMm }, range: [-maxHeight, maxHeight] },
-            zaxis: { title: { text: locale.visualization.sagMm }, range: [zMin, zMax] },
-            // Manual aspect ratio: 1:1 for X:Y, Z scaled to sag range
-            aspectmode: 'manual',
-            aspectratio: { x: 1, y: 1, z: (zMax - zMin) / (2 * maxHeight) }
-        },
-        margin: { l: 0, r: 0, t: 0, b: 0 }
-    }, { displayModeBar: false });
-
-    const imgData = await exportPlotToImage(plotDiv.id, 800, 500);
-    document.body.removeChild(plotDiv);
-    return imgData;
+    const grid = sampleSurfaceGrid(surface, 'sag', gridSize);
+    const zAspect = surfaceZAspect('sag', surface.type === 'Zernike', grid.max - grid.min, grid.maxHeight);
+    const option = surface3DOption({
+        grid,
+        unit: locale.summary?.units?.mm || 'mm',
+        colorscale,
+        colors: REPORT_COLORS,
+        gridColor: REPORT_GRID_COLOR,
+        zAspect,
+        interactive: false,
+        t: locale
+    });
+    return chartToImage(option, 800, 500);
 };
 
 /**
  * Generate 2D contour plot for report
  * @param {Object} surface - Surface object
  * @param {Object} plotData - Plot data arrays
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {number} gridSize - Grid size for 2D plot (default: 129)
  * @returns {Promise<string>} Base64 encoded image data
  */
-const generate2DContourImage = async (surface, plotData, colorscale = 'Jet', gridSize = 129, t = null) => {
+const generate2DContourImage = (surface, plotData, colorscale = 'Jet', gridSize = 129, t = null) => {
     const locale = t || getLocale();
-    const minHeight = parseNumber(surface.parameters['Min Height']);
-    const maxHeight = parseNumber(surface.parameters['Max Height']);
-    const size = gridSize;
-
-    // Import calculateSurfaceValues dynamically
-    const { calculateSurfaceValues } = await import('./calculations.js');
-
-    // Create coordinate arrays
-    const x = [], y = [];
-    for (let i = 0; i < size; i++) {
-        x.push(-maxHeight + (i * (2 * maxHeight)) / (size - 1));
-        y.push(-maxHeight + (i * (2 * maxHeight)) / (size - 1));
-    }
-
-    // Generate 2D grid by calculating actual surface values
-    const z = [];
-    for (let j = 0; j < size; j++) {
-        const row = [];
-        for (let i = 0; i < size; i++) {
-            const xi = x[i];
-            const yj = y[j];
-            const r = Math.sqrt(xi * xi + yj * yj);
-
-            if (r >= minHeight && r <= maxHeight) {
-                // Calculate surface value for this point
-                const values = (surface.type === 'Irregular' || surface.type === 'Zernike')
-                    ? calculateSurfaceValues(r, surface, xi, yj)
-                    : calculateSurfaceValues(r, surface);
-                row.push(values.sag);
-            } else {
-                row.push(null);
-            }
-        }
-        z.push(row);
-    }
-
-    const plotDiv = document.createElement('div');
-    plotDiv.id = 'temp-plot2d-' + Date.now() + Math.random();
-    plotDiv.style.position = 'absolute';
-    plotDiv.style.left = '-9999px';
-    plotDiv.style.width = '800px';
-    plotDiv.style.height = '500px';
-    document.body.appendChild(plotDiv);
-
-    await Plotly.newPlot(plotDiv, [{
-        x: x,
-        y: y,
-        z: z,
-        type: 'heatmap',
-        colorscale: resolveColorscale(colorscale),
-        colorbar: {
-            title: { text: locale.visualization.sagMm },
-            thickness: 15,
-            len: 0.7
-        },
-        hoverongaps: false
-    }], {
-        xaxis: { title: { text: locale.visualization.xMm }, scaleanchor: 'y', scaleratio: 1, constrain: 'domain' },
-        yaxis: { title: { text: locale.visualization.yMm }, constrain: 'domain' },
-        margin: { l: 60, r: 120, t: 30, b: 60 }
-    }, { displayModeBar: false });
-
-    const imgData = await exportPlotToImage(plotDiv.id, 800, 500);
-    document.body.removeChild(plotDiv);
-    return imgData;
+    const grid = sampleSurfaceGrid(surface, 'sag', gridSize);
+    const option = heatmapOption({
+        grid,
+        unit: locale.summary?.units?.mm || 'mm',
+        colorscale,
+        colors: REPORT_COLORS,
+        gridColor: REPORT_GRID_COLOR,
+        title: '',
+        metricLabel: locale.visualization.sagMm,
+        interactive: false,
+        t: locale
+    });
+    return chartToImage(option, 800, 500, heatmapLayout);
 };
 
 /**
@@ -730,7 +585,7 @@ const generate2DContourImage = async (surface, plotData, colorscale = 'Jet', gri
  * @param {Object} surface - Surface object
  * @param {Object} plotData - Plot data arrays
  * @param {Object} summaryMetrics - Summary metrics
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {number} gridSize3D - Grid size for 3D plots (default: 65)
  * @param {number} gridSize2D - Grid size for 2D plots (default: 129)
  * @param {Object} t - Locale translations object
@@ -747,7 +602,7 @@ export const generateReportData = async (surface, plotData, summaryMetrics, colo
     console.log('2D plot generated:', plot2D ? 'Success' : 'Failed');
 
     // Generate metric plots
-    const metricPlots = await generateMetricPlots(plotData, t);
+    const metricPlots = await generateMetricPlots(plotData, t, surface.type);
     console.log('Metric plots generated:', metricPlots);
 
     const plotImages = {

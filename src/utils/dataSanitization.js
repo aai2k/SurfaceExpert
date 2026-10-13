@@ -1,5 +1,5 @@
 // Data sanitization utilities
-// Validates and sanitizes numeric data to prevent WebGL/Plotly crashes
+// Validates and sanitizes numeric data to prevent WebGL crashes
 
 /**
  * Maximum safe value for WebGL rendering
@@ -115,51 +115,4 @@ export const getSafeBounds = (values) => {
     }
 
     return { min, max };
-};
-
-/**
- * Wrap Plotly.newPlot with error handling
- * Catches WebGL errors and provides user-friendly feedback
- *
- * @param {HTMLElement} element - Container element
- * @param {Array} data - Plotly data array
- * @param {Object} layout - Plotly layout object
- * @param {Object} config - Plotly config object
- * @returns {Promise} Promise resolving to plot element or error
- */
-export const safePlotlyNewPlot = async (element, data, layout, config) => {
-    try {
-        return await window.Plotly.newPlot(element, data, layout, config);
-    } catch (error) {
-        console.error('Plotly rendering error:', error);
-
-        // Clear the container and show error message
-        element.innerHTML = `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                color: #ff6b6b;
-                font-family: monospace;
-                padding: 20px;
-                text-align: center;
-            ">
-                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">
-                    Unable to Render Plot
-                </div>
-                <div style="font-size: 12px; color: #ccc; max-width: 400px;">
-                    The surface parameters produce extreme values that cannot be visualized.
-                    Please adjust the parameters to more reasonable values.
-                </div>
-                <div style="font-size: 11px; color: #888; margin-top: 15px; font-family: monospace;">
-                    Error: ${error.message || 'WebGL rendering failed'}
-                </div>
-            </div>
-        `;
-
-        throw error; // Re-throw to allow further error handling if needed
-    }
 };

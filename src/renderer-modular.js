@@ -1180,8 +1180,8 @@ const mountApp = () => {
     if (typeof ZMXParser === 'undefined') {
         console.error('❌ ZMXParser not loaded!');
     }
-    if (typeof Plotly === 'undefined') {
-        console.error('❌ Plotly not loaded!');
+    if (typeof echarts === 'undefined') {
+        console.error('❌ ECharts not loaded!');
     }
 
     // Make sure globals are accessible

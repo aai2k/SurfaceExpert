@@ -4,7 +4,7 @@
 //      into one script, so a deploy is served as a single, cache-busted file.
 //   2. Bundle the browser electronAPI shim (web/shim.js) and the fitter worker
 //      (web/fitter-worker.js + src/surfaceFitterJs.js + ml-levenberg-marquardt).
-//   3. Copy the classic global scripts, the stylesheet, React and the favicon.
+//   3. Copy the classic global scripts, the stylesheet, React, ECharts and the favicon.
 //   4. Rewrite index.html: production React from vendor/, the shim before the
 //      renderer, and a CSP that also admits MathJax for printed reports.
 //
@@ -57,6 +57,10 @@ const reactDir = path.dirname(require.resolve('react/package.json'));
 const reactDomDir = path.dirname(require.resolve('react-dom/package.json'));
 fs.copyFileSync(path.join(reactDir, 'umd', 'react.production.min.js'), path.join(out, 'vendor', 'react.production.min.js'));
 fs.copyFileSync(path.join(reactDomDir, 'umd', 'react-dom.production.min.js'), path.join(out, 'vendor', 'react-dom.production.min.js'));
+const echartsDir = path.dirname(require.resolve('echarts/package.json'));
+const echartsGlDir = path.dirname(require.resolve('echarts-gl/package.json'));
+fs.copyFileSync(path.join(echartsDir, 'dist', 'echarts.min.js'), path.join(out, 'vendor', 'echarts.min.js'));
+fs.copyFileSync(path.join(echartsGlDir, 'dist', 'echarts-gl.min.js'), path.join(out, 'vendor', 'echarts-gl.min.js'));
 
 fs.copyFileSync(path.join(root, 'icons', 'IconInvertedNoBGGlow.ico'), path.join(out, 'favicon.ico'));
 
@@ -83,6 +87,8 @@ const v = `?v=${stamp}`;
 
 replaceOnce('../node_modules/react/umd/react.development.js', 'vendor/react.production.min.js');
 replaceOnce('../node_modules/react-dom/umd/react-dom.development.js', 'vendor/react-dom.production.min.js');
+replaceOnce('../node_modules/echarts/dist/echarts.min.js', 'vendor/echarts.min.js');
+replaceOnce('../node_modules/echarts-gl/dist/echarts-gl.min.js', 'vendor/echarts-gl.min.js');
 replaceOnce('href="styles.css"', `href="styles.css${v}"`);
 replaceOnce('<script src="calculationsWrapper.js"></script>',
     `<script src="web-shim.js${v}"></script>\n    <script src="calculationsWrapper.js${v}"></script>`);
@@ -92,8 +98,8 @@ replaceOnce('</title>', '</title>\n    <link rel="icon" href="favicon.ico">');
 
 // HTML and PDF reports typeset formulas with MathJax from cdnjs. A printed
 // report is rendered in a frame that inherits this page's policy, so the
-// browser build admits cdnjs alongside Plotly.
-replaceOnce('https://cdn.plot.ly;', 'https://cdn.plot.ly https://cdnjs.cloudflare.com;');
+// browser build admits cdnjs.
+replaceOnce("'unsafe-eval'; img-src", "'unsafe-eval' https://cdnjs.cloudflare.com; img-src");
 
 fs.writeFileSync(path.join(out, 'index.html'), html, 'utf8');
 

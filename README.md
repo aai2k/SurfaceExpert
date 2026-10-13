@@ -2,7 +2,7 @@
 
 Desktop application for analyzing and visualizing optical surface characteristics. Built with Electron and React.
 
-![Version](https://img.shields.io/badge/version-3.0.4-blue)
+![Version](https://img.shields.io/badge/version-3.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 <img width="1919" height="1023" alt="surfaceexpert" src="https://github.com/user-attachments/assets/dc9274a8-b7ee-4f0c-a657-aee136ecb538" />
@@ -157,7 +157,7 @@ MIT License - See LICENSE file for details
 
 
 - Built with Electron and React
-- Visualization powered by Plotly.js
+- Visualization powered by Apache ECharts and ECharts GL
 - Surface fitting using lmfit library
 - Mathematical formulations based on Zemax optical design software conventions
 

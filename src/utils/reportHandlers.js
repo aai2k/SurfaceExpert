@@ -80,7 +80,7 @@ export const generateReportPlotData = (surface) => {
  * Export HTML report for a surface
  * @param {Object} surface - Surface to export
  * @param {number} wavelength - Reference wavelength in nm
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {number} gridSize3D - Grid size for 3D plots (default: 65)
  * @param {number} gridSize2D - Grid size for 2D plots (default: 129)
  * @param {Object} t - Locale translations object
@@ -139,7 +139,7 @@ export const exportHTMLReport = async (surface, wavelength, colorscale, gridSize
  * Export PDF report for a surface
  * @param {Object} surface - Surface to export
  * @param {number} wavelength - Reference wavelength in nm
- * @param {string} colorscale - Plotly colorscale name
+ * @param {string} colorscale - colorscale name
  * @param {number} gridSize3D - Grid size for 3D plots (default: 65)
  * @param {number} gridSize2D - Grid size for 2D plots (default: 129)
  * @param {Object} t - Locale translations object
