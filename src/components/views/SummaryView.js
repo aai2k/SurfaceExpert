@@ -36,6 +36,7 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
                 angle: formatValue(values.angle),
                 angleDMS: degreesToDMS(values.angle),
                 asphericity: formatValue(values.asphericity),
+                asphericityZ: formatValue(values.asphericityZ),
                 aberration: formatValue(values.aberration),
                 // Store raw values for max calculations
                 rawSag: values.sag,
@@ -64,6 +65,7 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
             angle: formatValue(values.angle),
             angleDMS: degreesToDMS(values.angle),
             asphericity: formatValue(values.asphericity),
+            asphericityZ: formatValue(values.asphericityZ),
             aberration: formatValue(values.aberration),
             // Store raw values for max calculations
             rawSag: values.sag,
@@ -80,7 +82,7 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
 
     // Calculate all metrics using shared utility function
     const metrics = calculateSurfaceMetrics(selectedSurface, wavelength);
-    const { maxSag, maxSlope, maxAngle, maxAsphericity, maxAberration, maxAsphGradient, bestFitSphere, paraxialFNum, workingFNum } = metrics;
+    const { maxSag, maxSlope, maxAngle, maxAsphericity, maxAsphericityZ, maxAberration, maxAsphGradient, bestFitSphere, paraxialFNum, workingFNum } = metrics;
 
     const minHeight = parseNumber(selectedSurface.parameters['Min Height']);
     const maxHeight = parseNumber(selectedSurface.parameters['Max Height']);
@@ -197,6 +199,11 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
                     h('td', { style: { padding: '10px', paddingLeft: '20px' } }, t.summary.units.mm)
                 ),
                 !isNonRotSymmetric && h('tr', { style: { borderBottom: `1px solid ${c.border}` } },
+                    h('td', { style: { padding: '10px' } }, t.properties.maxAsphericityZ),
+                    h('td', { style: { padding: '10px', textAlign: 'right' } }, formatValue(maxAsphericityZ)),
+                    h('td', { style: { padding: '10px', paddingLeft: '20px' } }, t.summary.units.mm)
+                ),
+                !isNonRotSymmetric && h('tr', { style: { borderBottom: `1px solid ${c.border}` } },
                     h('td', { style: { padding: '10px' } }, t.properties.maxAsphGradient),
                     h('td', { style: { padding: '10px', textAlign: 'right' } }, formatValue(maxAsphGradient)),
                     h('td', { style: { padding: '10px', paddingLeft: '20px' } }, t.summary.units.perMm)
@@ -231,6 +238,7 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
                     !isNonRotSymmetric && h('th', { style: { padding: '8px', textAlign: 'right', color: c.textDim } }, `${t.summary.analysisHeaders.angle} (${t.summary.units.deg})`),
                     !isNonRotSymmetric && h('th', { style: { padding: '8px', textAlign: 'right', color: c.textDim } }, `${t.summary.analysisHeaders.angle} (DMS)`),
                     !isNonRotSymmetric && h('th', { style: { padding: '8px', textAlign: 'right', color: c.textDim } }, `${t.summary.analysisHeaders.asphericity} (${t.summary.units.mm})`),
+                    !isNonRotSymmetric && h('th', { style: { padding: '8px', textAlign: 'right', color: c.textDim } }, `${t.summary.analysisHeaders.asphericityZ} (${t.summary.units.mm})`),
                     !isNonRotSymmetric && h('th', { style: { padding: '8px', textAlign: 'right', color: c.textDim } }, `${t.summary.analysisHeaders.aberration} (${t.summary.units.mm})`)
                 )
             ),
@@ -243,6 +251,7 @@ export const SummaryView = ({ selectedSurface, wavelength = 632.8, c, t }) => {
                         !isNonRotSymmetric && h('td', { style: { padding: '8px', textAlign: 'right' } }, row.angle),
                         !isNonRotSymmetric && h('td', { style: { padding: '8px', textAlign: 'right' } }, row.angleDMS),
                         !isNonRotSymmetric && h('td', { style: { padding: '8px', textAlign: 'right' } }, row.asphericity),
+                        !isNonRotSymmetric && h('td', { style: { padding: '8px', textAlign: 'right' } }, row.asphericityZ),
                         !isNonRotSymmetric && h('td', { style: { padding: '8px', textAlign: 'right' } }, row.aberration)
                     )
                 )

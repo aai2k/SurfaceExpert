@@ -322,6 +322,7 @@ const generateMetricsTable = (metrics, surfaceType, locale) => {
     if (surfaceType !== 'Sphere') {
         metricsList.push(
             { label: locale.properties.maxAsphericity, value: `${formatValue(metrics.maxAsphericity)} ${locale.summary.units.mm}` },
+            { label: locale.properties.maxAsphericityZ, value: `${formatValue(metrics.maxAsphericityZ)} ${locale.summary.units.mm}` },
             { label: locale.properties.maxAsphGradient, value: `${formatValue(metrics.maxAsphGradient)} ${locale.summary.units.perMm}` }
         );
     }
@@ -387,7 +388,7 @@ const generateDataTable = (plotData, showSlope, showAsphericity, showAberration,
         return '<p>No calculated data available.</p>';
     }
 
-    const { rValues, sagValues, slopeValues, angleValues, asphericityValues, aberrationValues } = plotData;
+    const { rValues, sagValues, slopeValues, angleValues, asphericityValues, asphericityZValues, aberrationValues } = plotData;
 
 
 
@@ -396,7 +397,7 @@ const generateDataTable = (plotData, showSlope, showAsphericity, showAberration,
     let html = '<table class="data-table"><thead><tr>';
     html += `<th>${locale.reports.radius} (${locale.summary.units.mm})</th><th>${locale.reports.sag} (${locale.summary.units.mm})</th>`;
     if (showSlope) html += `<th>${locale.reports.slope} (${locale.summary.units.rad})</th><th>${locale.reports.angle} (${locale.summary.units.deg})</th><th>${locale.reports.angleDMS}</th>`;
-    if (showAsphericity) html += `<th>${locale.reports.asphericity} (${locale.summary.units.mm})</th>`;
+    if (showAsphericity) html += `<th>${locale.reports.asphericity} (${locale.summary.units.mm})</th><th>${locale.reports.asphericityZ} (${locale.summary.units.mm})</th>`;
     if (showAberration) html += `<th>${locale.reports.aberration} (${locale.summary.units.mm})</th>`;
     html += '</tr></thead><tbody>';
 
@@ -410,7 +411,7 @@ const generateDataTable = (plotData, showSlope, showAsphericity, showAberration,
             html += `<td>${formatValue(angleValues[i])}</td>`;
             html += `<td>${angleDMS}</td>`;
         }
-        if (showAsphericity) html += `<td>${formatValue(asphericityValues[i])}</td>`;
+        if (showAsphericity) html += `<td>${formatValue(asphericityValues[i])}</td><td>${formatValue(asphericityZValues[i])}</td>`;
         if (showAberration) html += `<td>${formatValue(aberrationValues[i])}</td>`;
         html += '</tr>';
     }
@@ -472,6 +473,12 @@ const generatePlotsSection = (plotImages, showSlope, showAsphericity, showAberra
                 <img src="${plotImages.asphericityPlot}" alt="${locale.reports.plotAsphericity}" />
             </div>`;
         }
+        if (showAsphericity && plotImages.asphericityZPlot) {
+            html += `<div class="plot-container">
+                <div class="plot-title">${locale.reports.plotAsphericityZ}</div>
+                <img src="${plotImages.asphericityZPlot}" alt="${locale.reports.plotAsphericityZ}" />
+            </div>`;
+        }
         if (showAberration && plotImages.aberrationPlot) {
             html += `<div class="plot-container">
                 <div class="plot-title">${locale.reports.plotAberration}</div>
@@ -497,7 +504,7 @@ const REPORT_GRID_COLOR = 'rgba(0, 0, 0, 0.1)';
  * Generate individual metric plots
  */
 export const generateMetricPlots = async (plotData, t = null, surfaceType = null) => {
-    const { rValues, sagValues, slopeValues, asphericityValues, aberrationValues } = plotData;
+    const { rValues, sagValues, slopeValues, asphericityValues, asphericityZValues, aberrationValues } = plotData;
     const locale = t || getLocale();
 
     // Helper to create a simple line plot
@@ -526,6 +533,7 @@ export const generateMetricPlots = async (plotData, t = null, surfaceType = null
         sagPlot: await createPlot(rValues, sagValues, locale.visualization.sagMm, surfaceType !== 'Zernike'),
         slopePlot: await createPlot(rValues, slopeValues, locale.visualization.slopeRad, false),
         asphericityPlot: asphericityValues ? await createPlot(rValues, asphericityValues, locale.visualization.asphericityMm, false) : null,
+        asphericityZPlot: asphericityZValues ? await createPlot(rValues, asphericityZValues, locale.visualization.asphericityZMm, false) : null,
         aberrationPlot: aberrationValues ? await createPlot(rValues, aberrationValues, locale.visualization.aberrationMm, false) : null
     };
 };

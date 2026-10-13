@@ -114,6 +114,7 @@ export const locales = {
       maxSlope: 'Max Slope',
       maxAngle: 'Max Angle',
       maxAsphericity: 'Max Asphericity',
+      maxAsphericityZ: 'Max Asphericity Z',
       maxAsphGradient: 'Max Asph Gradient',
       maxAberration: 'Max Aberration',
       bestFitSphere: 'Best Fit Sphere',
@@ -152,6 +153,7 @@ export const locales = {
         slope: 'Slope',
         angle: 'Angle',
         asphericity: 'Asphericity',
+        asphericityZ: 'Asphericity Z',
         aberration: 'Aberration',
         data: 'Data'
       },
@@ -174,6 +176,7 @@ export const locales = {
       slopeRad: 'Slope (rad)',
       angleDeg: 'Angle (°)',
       asphericityMm: 'Asphericity (mm)',
+      asphericityZMm: 'Asphericity Z (mm)',
       aberrationMm: 'Aberration (mm)',
       heightRange: 'Height Range'
     },
@@ -350,6 +353,7 @@ export const locales = {
         slope: 'Slope',
         angle: 'Angle',
         asphericity: 'Asphericity',
+        asphericityZ: 'Asphericity Z',
         aberration: 'Aberration'
       },
 
@@ -395,6 +399,7 @@ export const locales = {
       angle: 'Angle',
       angleDMS: 'Angle (DMS)',
       asphericity: 'Asphericity',
+      asphericityZ: 'Asphericity Z',
       aberration: 'Aberration',
       parameter: 'Parameter',
       value: 'Value',
@@ -409,6 +414,7 @@ export const locales = {
       plotSag: 'Sag vs Radial Coordinate',
       plotSlope: 'Slope vs Radial Coordinate',
       plotAsphericity: 'Asphericity vs Radial Coordinate',
+      plotAsphericityZ: 'Asphericity Z vs Radial Coordinate',
       plotAberration: 'Aberration vs Radial Coordinate'
     },
 
@@ -593,6 +599,7 @@ export const locales = {
       maxSlope: 'Макс. крутизна',
       maxAngle: 'Макс. угол',
       maxAsphericity: 'Макс. асферичность',
+      maxAsphericityZ: 'Макс. асферичность по Z',
       maxAsphGradient: 'Макс. градиент асферичности',
       maxAberration: 'Макс. аберрация нормали',
       bestFitSphere: 'Ближайшая сфера сравнения',
@@ -631,6 +638,7 @@ export const locales = {
         slope: 'Крутизна',
         angle: 'Угол',
         asphericity: 'Асферичность',
+        asphericityZ: 'Асферичность Z',
         aberration: 'Аберрация нормали',
         data: 'Данные'
       },
@@ -653,6 +661,7 @@ export const locales = {
       slopeRad: 'Крутизна (рад)',
       angleDeg: 'Угол (°)',
       asphericityMm: 'Асферичность (мм)',
+      asphericityZMm: 'Асферичность Z (мм)',
       aberrationMm: 'Аберрация нормали (мм)',
       heightRange: 'Диапазон высот'
     },
@@ -829,6 +838,7 @@ export const locales = {
         slope: 'Крутизна',
         angle: 'Угол',
         asphericity: 'Асферичность',
+        asphericityZ: 'Асферичность Z',
         aberration: 'Аберрация нормали'
       },
 
@@ -874,6 +884,7 @@ export const locales = {
       angle: 'Угол',
       angleDMS: 'Угол (DMS)',
       asphericity: 'Асферичность',
+      asphericityZ: 'Асферичность Z',
       aberration: 'Аберрация нормали',
       parameter: 'Параметр',
       value: 'Значение',
@@ -888,6 +899,7 @@ export const locales = {
       plotSag: 'Зависимость стрелки прогиба от радиальной координаты',
       plotSlope: 'Зависимость крутизны от радиальной координаты',
       plotAsphericity: 'Зависимость асферичности от радиальной координаты',
+      plotAsphericityZ: 'Зависимость асферичности по Z от радиальной координаты',
       plotAberration: 'Зависимость аберраций нормали от радиальной координаты'
     },
 

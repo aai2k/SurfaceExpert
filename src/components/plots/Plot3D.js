@@ -8,7 +8,7 @@ import { sampleSurfaceGrid, surface3DOption, surfaceZAspect } from './chartOptio
  * Create 3D surface plot
  * @param {Object} plotRef - React ref to plot container
  * @param {Object} selectedSurface - Surface object with type and parameters
- * @param {string} activeTab - Current metric tab (sag, slope, asphericity, aberration)
+ * @param {string} activeTab - Current metric tab (sag, slope, asphericity, asphericityZ, aberration)
  * @param {string} colorscale - colorscale name
  * @param {number} gridSize - Grid size (odd number to ensure point at 0)
  * @param {Object} c - Color palette object

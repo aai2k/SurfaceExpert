@@ -77,6 +77,7 @@ export const PropertiesPanel = ({
         maxAngle: `${formatValue(rawMetrics.maxAngle)} ${t.summary.units.deg}`,
         maxAngleDMS: degreesToDMS(rawMetrics.maxAngle),
         maxAsphericity: `${formatValue(rawMetrics.maxAsphericity)} ${t.summary.units.mm}`,
+        maxAsphericityZ: `${formatValue(rawMetrics.maxAsphericityZ)} ${t.summary.units.mm}`,
         maxAsphGradient: `${formatValue(rawMetrics.maxAsphGradient)} ${t.summary.units.perMm}`,
         bestFitSphere: `${formatValue(rawMetrics.bestFitSphere)} ${t.summary.units.mm}`,
         rmsError: rawMetrics.rmsError !== null ? {
@@ -373,6 +374,7 @@ export const PropertiesPanel = ({
                 selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: t.properties.maxAngle, value: metrics.maxAngle, editable: false, c }),
                 selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: `${t.properties.maxAngle} (DMS)`, value: metrics.maxAngleDMS, editable: false, c }),
                 selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: t.properties.maxAsphericity, value: metrics.maxAsphericity, editable: false, c }),
+                selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: t.properties.maxAsphericityZ, value: metrics.maxAsphericityZ, editable: false, c }),
                 selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: t.properties.maxAsphGradient, value: metrics.maxAsphGradient, editable: false, c }),
                 selectedSurface.type !== 'Zernike' && selectedSurface.type !== 'Irregular' && h(PropertyRow, { label: t.properties.bestFitSphere, value: metrics.bestFitSphere, editable: false, c }),
                 // RMS and P-V error for Zernike and Irregular surfaces

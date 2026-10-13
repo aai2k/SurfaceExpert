@@ -1,5 +1,5 @@
 // DataView component - Displays tabular data for a selected metric
-// Shows radial coordinate vs. selected value (sag, slope, asphericity, aberration)
+// Shows radial coordinate vs. selected value (sag, slope, asphericity, asphericityZ, aberration)
 
 import { calculateSurfaceValues } from '../../utils/calculations.js';
 import { formatValue } from '../../utils/formatters.js';
@@ -33,6 +33,7 @@ export const DataView = ({ activeTab, selectedSurface, c, t }) => {
             if (activeTab === 'sag') value = values.sag;
             else if (activeTab === 'slope') value = values.slope;
             else if (activeTab === 'asphericity') value = values.asphericity;
+            else if (activeTab === 'asphericityZ') value = values.asphericityZ;
             else if (activeTab === 'aberration') value = values.aberration;
 
             data.push({
@@ -56,6 +57,7 @@ export const DataView = ({ activeTab, selectedSurface, c, t }) => {
         if (activeTab === 'sag') value = values.sag;
         else if (activeTab === 'slope') value = values.slope;
         else if (activeTab === 'asphericity') value = values.asphericity;
+        else if (activeTab === 'asphericityZ') value = values.asphericityZ;
         else if (activeTab === 'aberration') value = values.aberration;
         data.push({
             r: maxHeight.toFixed(7),

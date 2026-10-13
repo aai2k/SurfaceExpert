@@ -104,13 +104,13 @@ export const calculateSagOnly = (r, surface) => {
  * @param {Object} surface - Surface object
  * @param {number|null} x - X coordinate for non-rotationally symmetric surfaces
  * @param {number|null} y - Y coordinate for non-rotationally symmetric surfaces
- * @returns {Object} {sag, slope, asphericity, aberration, angle}
+ * @returns {Object} {sag, slope, asphericity, asphericityZ, aberration, angle}
  */
 export const calculateSurfaceValues = (r, surface, x = null, y = null) => {
     const params = surface.parameters;
     const parseParam = (name) => parseNumber(params[name]);
 
-    let sag = 0, slope = 0, asphericity = 0, aberration = 0;
+    let sag = 0, slope = 0, asphericity = 0, asphericityZ = 0, aberration = 0;
 
     try {
         if (surface.type === 'Sphere') {
@@ -151,7 +151,7 @@ export const calculateSurfaceValues = (r, surface, x = null, y = null) => {
             const yCoord = y !== null ? y : 0;
 
             sag = window.SurfaceCalculations.calculateZernikeSag(xCoord, yCoord, R, k, normRadius, dx, dy, A2, A4, A6, A8, A10, A12, A14, A16, coeffs);
-            return { sag, slope: 0, asphericity: 0, aberration: 0, angle: 0 };
+            return { sag, slope: 0, asphericity: 0, asphericityZ: 0, aberration: 0, angle: 0 };
         } else if (surface.type === 'Irregular') {
             // Irregular surface requires x,y coordinates (non-rotationally symmetric)
             const R = parseParam('Radius'), k = parseParam('Conic Constant');
@@ -165,7 +165,7 @@ export const calculateSurfaceValues = (r, surface, x = null, y = null) => {
             const yCoord = y !== null ? y : 0;
 
             sag = window.SurfaceCalculations.calculateIrregularSag(xCoord, yCoord, R, k, dx, dy, tiltX, tiltY, Zs, Za, Zc, angle, maxHeight);
-            return { sag, slope: 0, asphericity: 0, aberration: 0, angle: 0 };
+            return { sag, slope: 0, asphericity: 0, asphericityZ: 0, aberration: 0, angle: 0 };
         } else if (surface.type === 'Opal Un U') {
             const R = parseParam('Radius'), e2 = parseParam('e2'), H = parseParam('H');
             const A2 = parseParam('A2'), A3 = parseParam('A3'), A4 = parseParam('A4'), A5 = parseParam('A5'), A6 = parseParam('A6');
@@ -189,10 +189,13 @@ export const calculateSurfaceValues = (r, surface, x = null, y = null) => {
         // Calculate asphericity using cached BFS parameters
         const bfsParams = getBestFitSphereParams(surface);
 
+        // Measured along the sphere normal (asphericity) and along z (asphericityZ)
         if (bfsParams.method === 'R3') {
             asphericity = window.SurfaceCalculations.calculateAsphericityForR3(r, sag, bfsParams.R3, bfsParams.R);
+            asphericityZ = window.SurfaceCalculations.calculateAsphericityZForR3(r, sag, bfsParams.R3);
         } else {
             asphericity = window.SurfaceCalculations.calculateAsphericityForR4(r, sag, bfsParams.R4, bfsParams.zm, bfsParams.rm, bfsParams.g, bfsParams.Lz);
+            asphericityZ = window.SurfaceCalculations.calculateAsphericityZForR4(r, sag, bfsParams.R4, bfsParams.zm, bfsParams.rm, bfsParams.g, bfsParams.Lz);
         }
 
         // Calculate aberration
@@ -213,7 +216,7 @@ export const calculateSurfaceValues = (r, surface, x = null, y = null) => {
     // Calculate angle from slope
     const angle = Math.atan(slope) * (180 / Math.PI); // Convert to degrees
 
-    return { sag, slope, asphericity, aberration, angle };
+    return { sag, slope, asphericity, asphericityZ, aberration, angle };
 };
 
 /**
@@ -243,7 +246,7 @@ export const calculateSurfaceMetrics = (surface, wavelengthNm = 632.8) => {
         R = parseParam('Radius');
     }
 
-    let maxSag = 0, maxSlope = 0, maxAngle = 0, maxAsphericity = 0, maxAberration = 0;
+    let maxSag = 0, maxSlope = 0, maxAngle = 0, maxAsphericity = 0, maxAsphericityZ = 0, maxAberration = 0;
     let maxAsphGradient = 0;
     let rmsError = null, pvError = null;
     const values = [];
@@ -260,6 +263,7 @@ export const calculateSurfaceMetrics = (surface, wavelengthNm = 632.8) => {
         if (isFinite(v.slope)) maxSlope = Math.max(maxSlope, Math.abs(v.slope));
         if (isFinite(v.angle)) maxAngle = Math.max(maxAngle, Math.abs(v.angle));
         if (isFinite(v.asphericity)) maxAsphericity = Math.max(maxAsphericity, Math.abs(v.asphericity));
+        if (isFinite(v.asphericityZ)) maxAsphericityZ = Math.max(maxAsphericityZ, Math.abs(v.asphericityZ));
         if (isFinite(v.aberration)) maxAberration = Math.max(maxAberration, Math.abs(v.aberration));
     }
 
@@ -310,6 +314,7 @@ export const calculateSurfaceMetrics = (surface, wavelengthNm = 632.8) => {
     if (isFinite(vMax.slope)) maxSlope = Math.max(maxSlope, Math.abs(vMax.slope));
     if (isFinite(vMax.angle)) maxAngle = Math.max(maxAngle, Math.abs(vMax.angle));
     if (isFinite(vMax.asphericity)) maxAsphericity = Math.max(maxAsphericity, Math.abs(vMax.asphericity));
+    if (isFinite(vMax.asphericityZ)) maxAsphericityZ = Math.max(maxAsphericityZ, Math.abs(vMax.asphericityZ));
     if (isFinite(vMax.aberration)) maxAberration = Math.max(maxAberration, Math.abs(vMax.aberration));
 
     // Calculate RMS and P-V error for Zernike and Irregular (already computed 2D grid above)
@@ -384,6 +389,7 @@ export const calculateSurfaceMetrics = (surface, wavelengthNm = 632.8) => {
         maxSlope,
         maxAngle,
         maxAsphericity,
+        maxAsphericityZ,
         maxAberration,
         maxAsphGradient,
         bestFitSphere,

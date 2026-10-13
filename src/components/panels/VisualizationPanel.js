@@ -32,7 +32,7 @@ export const VisualizationPanel = ({
         },
             (selectedSurface && (selectedSurface.type === 'Irregular' || selectedSurface.type === 'Zernike')
                 ? ['summary', 'sag']  // Non-rotationally symmetric surfaces only support sag
-                : ['summary', 'sag', 'slope', 'asphericity', 'aberration']
+                : ['summary', 'sag', 'slope', 'asphericity', 'asphericityZ', 'aberration']
             ).map(tab =>
                 h('div', {
                     key: tab,

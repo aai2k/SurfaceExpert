@@ -22,6 +22,7 @@ export const generateReportPlotData = (surface) => {
     const sagValues = [];
     const slopeValues = [];
     const asphericityValues = [];
+    const asphericityZValues = [];
     const aberrationValues = [];
     const angleValues = [];
 
@@ -42,6 +43,7 @@ export const generateReportPlotData = (surface) => {
         sagValues.push(values.sag);
         slopeValues.push(values.slope);
         asphericityValues.push(values.asphericity);
+        asphericityZValues.push(values.asphericityZ);
         aberrationValues.push(values.aberration);
         angleValues.push(values.angle);
     }
@@ -62,6 +64,7 @@ export const generateReportPlotData = (surface) => {
         sagValues.push(values.sag);
         slopeValues.push(values.slope);
         asphericityValues.push(values.asphericity);
+        asphericityZValues.push(values.asphericityZ);
         aberrationValues.push(values.aberration);
         angleValues.push(values.angle);
     }
@@ -71,6 +74,7 @@ export const generateReportPlotData = (surface) => {
         sagValues,
         slopeValues,
         asphericityValues,
+        asphericityZValues,
         aberrationValues,
         angleValues
     };

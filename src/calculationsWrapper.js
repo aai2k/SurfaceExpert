@@ -610,6 +610,26 @@ class SurfaceCalculations {
         return signZ * (R4 - Math.sqrt((z0 - z) ** 2 + r * r));
     }
 
+    // Asphericity along the z axis: surface sag minus best-fit-sphere sag at the
+    // same height r. Same sign as the normal asphericity above (positive where
+    // the surface lies above the sphere).
+    static calculateAsphericityZForR3(r, z, R3) {
+        // R3 = 0 is a flat best fit: the deviation from the plane z = 0
+        if (R3 === 0) return z;
+        const disc = 1 - (r * r) / (R3 * R3);
+        if (disc < 0) return 0;
+        return z - (r * r) / (R3 * (1 + Math.sqrt(disc)));
+    }
+
+    static calculateAsphericityZForR4(r, z, R4, zm, rm, g, Lz) {
+        const signLz = Math.sign(Lz);
+        if (signLz === 0) return 0;
+        const z0 = zm + signLz * Math.sqrt(g * g - rm * rm);
+        const disc = R4 * R4 - r * r;
+        if (disc < 0) return 0;
+        return z - (z0 - signLz * Math.sqrt(disc));
+    }
+
     static calculateAberrationOfNormals(z, r, slope, R) {
         if (slope === 0) return 0;
         return z + r / slope - R;
